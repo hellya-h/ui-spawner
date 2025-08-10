@@ -2,107 +2,168 @@ local Spawner = loadstring(game:HttpGet("https://gitlab.com/darkiedarkie/dark/-/
 
 -- Create the main UI
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "SpawnerUI"
+ScreenGui.Name = "WoeqHub"
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 350, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -175, 0.5, -200)
+MainFrame.Size = UDim2.new(0, 400, 0, 450)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -225)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-MainFrame.BorderSizePixel = 0
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+MainFrame.BorderColor3 = Color3.fromRGB(0, 100, 255)
+MainFrame.BorderSizePixel = 2
+MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
+
+-- Make frame draggable
+local dragToggle = nil
+local dragSpeed = 0.25
+local dragStart = nil
+local startPos = nil
+
+local function updateInput(input)
+    local delta = input.Position - dragStart
+    local position = UDim2.new(
+        startPos.X.Scale, 
+        startPos.X.Offset + delta.X, 
+        startPos.Y.Scale, 
+        startPos.Y.Offset + delta.Y
+    )
+    game:GetService("TweenService"):Create(
+        MainFrame, 
+        TweenInfo.new(dragSpeed), 
+        {Position = position}
+    ):Play()
+end
+
+MainFrame.InputBegan:Connect(function(input)
+    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragToggle = false
+            end
+        end)
+    end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        if dragToggle then
+            updateInput(input)
+        end
+    end
+end)
+
+-- Title bar with gradient
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
+TitleBar.Position = UDim2.new(0, 0, 0, 0)
+TitleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+TitleBar.BorderSizePixel = 0
+TitleBar.ZIndex = 2
+TitleBar.Parent = MainFrame
+
+local Gradient = Instance.new("UIGradient")
+Gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 80, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 180, 255))
+}
+Gradient.Rotation = 90
+Gradient.Parent = TitleBar
 
 local Title = Instance.new("TextLabel")
 Title.Name = "Title"
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Position = UDim2.new(0, 0, 0, 0)
-Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-Title.BorderSizePixel = 0
-Title.Text = "Item Spawner"
+Title.Size = UDim2.new(0, 200, 0, 40)
+Title.Position = UDim2.new(0.5, -100, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "WOEQ HUB"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 18
-Title.Parent = MainFrame
+Title.ZIndex = 3
+Title.Parent = TitleBar
 
 local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseButton"
 CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -30, 0, 5)
+CloseButton.Position = UDim2.new(1, -35, 0, 5)
 CloseButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 CloseButton.BorderSizePixel = 0
 CloseButton.Text = "X"
 CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.TextSize = 16
-CloseButton.Parent = Title
+CloseButton.ZIndex = 3
+CloseButton.Parent = TitleBar
 
 CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
--- Create tab buttons
+-- Create tab buttons with gradient effect
 local TabButtons = Instance.new("Frame")
 TabButtons.Name = "TabButtons"
-TabButtons.Size = UDim2.new(1, 0, 0, 40)
-TabButtons.Position = UDim2.new(0, 0, 0, 40)
+TabButtons.Size = UDim2.new(1, -10, 0, 40)
+TabButtons.Position = UDim2.new(0, 5, 0, 45)
 TabButtons.BackgroundTransparency = 1
 TabButtons.Parent = MainFrame
 
-local PetsTab = Instance.new("TextButton")
-PetsTab.Name = "PetsTab"
-PetsTab.Size = UDim2.new(0.25, 0, 1, 0)
-PetsTab.Position = UDim2.new(0, 0, 0, 0)
-PetsTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-PetsTab.BorderSizePixel = 0
-PetsTab.Text = "Pets"
-PetsTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-PetsTab.Font = Enum.Font.Gotham
-PetsTab.TextSize = 14
-PetsTab.Parent = TabButtons
+local function createTabButton(name, position)
+    local button = Instance.new("TextButton")
+    button.Name = name.."Tab"
+    button.Size = UDim2.new(0.24, 0, 1, 0)
+    button.Position = position
+    button.BackgroundColor3 = Color3.fromRGB(25, 25, 40)
+    button.BorderColor3 = Color3.fromRGB(0, 100, 255)
+    button.BorderSizePixel = 1
+    button.Text = name
+    button.TextColor3 = Color3.fromRGB(200, 200, 255)
+    button.Font = Enum.Font.GothamSemibold
+    button.TextSize = 14
+    button.Parent = TabButtons
+    
+    local buttonGradient = Instance.new("UIGradient")
+    buttonGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 50)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 40))
+    }
+    buttonGradient.Rotation = 90
+    buttonGradient.Parent = button
+    
+    button.MouseEnter:Connect(function()
+        game:GetService("TweenService"):Create(
+            button,
+            TweenInfo.new(0.1),
+            {BackgroundColor3 = Color3.fromRGB(40, 40, 60)}
+        ):Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        game:GetService("TweenService"):Create(
+            button,
+            TweenInfo.new(0.1),
+            {BackgroundColor3 = Color3.fromRGB(25, 25, 40)}
+        ):Play()
+    end)
+    
+    return button
+end
 
-local SeedsTab = Instance.new("TextButton")
-SeedsTab.Name = "SeedsTab"
-SeedsTab.Size = UDim2.new(0.25, 0, 1, 0)
-SeedsTab.Position = UDim2.new(0.25, 0, 0, 0)
-SeedsTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-SeedsTab.BorderSizePixel = 0
-SeedsTab.Text = "Seeds"
-SeedsTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-SeedsTab.Font = Enum.Font.Gotham
-SeedsTab.TextSize = 14
-SeedsTab.Parent = TabButtons
-
-local EggsTab = Instance.new("TextButton")
-EggsTab.Name = "EggsTab"
-EggsTab.Size = UDim2.new(0.25, 0, 1, 0)
-EggsTab.Position = UDim2.new(0.5, 0, 0, 0)
-EggsTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-EggsTab.BorderSizePixel = 0
-EggsTab.Text = "Eggs"
-EggsTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-EggsTab.Font = Enum.Font.Gotham
-EggsTab.TextSize = 14
-EggsTab.Parent = TabButtons
-
-local SpinTab = Instance.new("TextButton")
-SpinTab.Name = "SpinTab"
-SpinTab.Size = UDim2.new(0.25, 0, 1, 0)
-SpinTab.Position = UDim2.new(0.75, 0, 0, 0)
-SpinTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-SpinTab.BorderSizePixel = 0
-SpinTab.Text = "Spin"
-SpinTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpinTab.Font = Enum.Font.Gotham
-SpinTab.TextSize = 14
-SpinTab.Parent = TabButtons
+local PetsTab = createTabButton("Pets", UDim2.new(0, 0, 0, 0))
+local SeedsTab = createTabButton("Seeds", UDim2.new(0.25, 0, 0, 0))
+local EggsTab = createTabButton("Eggs", UDim2.new(0.5, 0, 0, 0))
+local SpinTab = createTabButton("Spin", UDim2.new(0.75, 0, 0, 0))
 
 -- Create content frames
 local ContentFrame = Instance.new("Frame")
 ContentFrame.Name = "ContentFrame"
-ContentFrame.Size = UDim2.new(1, -10, 1, -90)
-ContentFrame.Position = UDim2.new(0, 5, 0, 85)
+ContentFrame.Size = UDim2.new(1, -10, 1, -100)
+ContentFrame.Position = UDim2.new(0, 5, 0, 90)
 ContentFrame.BackgroundTransparency = 1
 ContentFrame.Parent = MainFrame
 
@@ -112,12 +173,13 @@ PetsContent.Name = "PetsContent"
 PetsContent.Size = UDim2.new(1, 0, 1, 0)
 PetsContent.BackgroundTransparency = 1
 PetsContent.ScrollBarThickness = 5
+PetsContent.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
 PetsContent.Visible = false
 PetsContent.Parent = ContentFrame
 
 local PetsList = Instance.new("UIListLayout")
 PetsList.Name = "PetsList"
-PetsList.Padding = UDim.new(0, 5)
+PetsList.Padding = UDim.new(0, 8)
 PetsList.Parent = PetsContent
 
 -- Seeds content
@@ -126,12 +188,13 @@ SeedsContent.Name = "SeedsContent"
 SeedsContent.Size = UDim2.new(1, 0, 1, 0)
 SeedsContent.BackgroundTransparency = 1
 SeedsContent.ScrollBarThickness = 5
+SeedsContent.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
 SeedsContent.Visible = false
 SeedsContent.Parent = ContentFrame
 
 local SeedsList = Instance.new("UIListLayout")
 SeedsList.Name = "SeedsList"
-SeedsList.Padding = UDim.new(0, 5)
+SeedsList.Padding = UDim.new(0, 8)
 SeedsList.Parent = SeedsContent
 
 -- Eggs content
@@ -140,12 +203,13 @@ EggsContent.Name = "EggsContent"
 EggsContent.Size = UDim2.new(1, 0, 1, 0)
 EggsContent.BackgroundTransparency = 1
 EggsContent.ScrollBarThickness = 5
+EggsContent.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
 EggsContent.Visible = false
 EggsContent.Parent = ContentFrame
 
 local EggsList = Instance.new("UIListLayout")
 EggsList.Name = "EggsList"
-EggsList.Padding = UDim.new(0, 5)
+EggsList.Padding = UDim.new(0, 8)
 EggsList.Parent = EggsContent
 
 -- Spin content
@@ -156,108 +220,136 @@ SpinContent.BackgroundTransparency = 1
 SpinContent.Visible = false
 SpinContent.Parent = ContentFrame
 
--- Input fields for pet spawning
-local KGLabel = Instance.new("TextLabel")
-KGLabel.Name = "KGLabel"
-KGLabel.Size = UDim2.new(0, 100, 0, 20)
-KGLabel.Position = UDim2.new(0, 10, 0, 10)
-KGLabel.BackgroundTransparency = 1
-KGLabel.Text = "KG:"
-KGLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-KGLabel.Font = Enum.Font.Gotham
-KGLabel.TextSize = 14
-KGLabel.Parent = PetsContent
+-- Input fields for pet spawning with better styling
+local function createInputField(parent, name, position, defaultValue)
+    local frame = Instance.new("Frame")
+    frame.Name = name.."Frame"
+    frame.Size = UDim2.new(1, 0, 0, 30)
+    frame.Position = position
+    frame.BackgroundTransparency = 1
+    frame.Parent = parent
+    
+    local label = Instance.new("TextLabel")
+    label.Name = name.."Label"
+    label.Size = UDim2.new(0.4, 0, 1, 0)
+    label.Position = UDim2.new(0, 0, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = name..":"
+    label.TextColor3 = Color3.fromRGB(200, 200, 255)
+    label.Font = Enum.Font.GothamSemibold
+    label.TextSize = 14
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = frame
+    
+    local input = Instance.new("TextBox")
+    input.Name = name.."Input"
+    input.Size = UDim2.new(0.6, -10, 1, 0)
+    input.Position = UDim2.new(0.4, 0, 0, 0)
+    input.BackgroundColor3 = Color3.fromRGB(30, 30, 50)
+    input.BorderColor3 = Color3.fromRGB(0, 100, 255)
+    input.BorderSizePixel = 1
+    input.Text = tostring(defaultValue)
+    input.TextColor3 = Color3.fromRGB(255, 255, 255)
+    input.Font = Enum.Font.Gotham
+    input.TextSize = 14
+    input.Parent = frame
+    
+    return input
+end
 
-local KGInput = Instance.new("TextBox")
-KGInput.Name = "KGInput"
-KGInput.Size = UDim2.new(0, 100, 0, 20)
-KGInput.Position = UDim2.new(0, 120, 0, 10)
-KGInput.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-KGInput.BorderSizePixel = 0
-KGInput.Text = "1"
-KGInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-KGInput.Font = Enum.Font.Gotham
-KGInput.TextSize = 14
-KGInput.Parent = PetsContent
+local KGInput = createInputField(PetsContent, "KG", UDim2.new(0, 0, 0, 0), 1)
+local AgeInput = createInputField(PetsContent, "Age", UDim2.new(0, 0, 0, 40), 1)
 
-local AgeLabel = Instance.new("TextLabel")
-AgeLabel.Name = "AgeLabel"
-AgeLabel.Size = UDim2.new(0, 100, 0, 20)
-AgeLabel.Position = UDim2.new(0, 10, 0, 40)
-AgeLabel.BackgroundTransparency = 1
-AgeLabel.Text = "Age:"
-AgeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-AgeLabel.Font = Enum.Font.Gotham
-AgeLabel.TextSize = 14
-AgeLabel.Parent = PetsContent
+-- Enhanced spin section
+local SpinFrame = Instance.new("Frame")
+SpinFrame.Name = "SpinFrame"
+SpinFrame.Size = UDim2.new(1, 0, 0, 100)
+SpinFrame.Position = UDim2.new(0, 0, 0.5, -50)
+SpinFrame.AnchorPoint = Vector2.new(0, 0.5)
+SpinFrame.BackgroundTransparency = 1
+SpinFrame.Parent = SpinContent
 
-local AgeInput = Instance.new("TextBox")
-AgeInput.Name = "AgeInput"
-AgeInput.Size = UDim2.new(0, 100, 0, 20)
-AgeInput.Position = UDim2.new(0, 120, 0, 40)
-AgeInput.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-AgeInput.BorderSizePixel = 0
-AgeInput.Text = "1"
-AgeInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-AgeInput.Font = Enum.Font.Gotham
-AgeInput.TextSize = 14
-AgeInput.Parent = PetsContent
-
--- Spin input
 local SpinInput = Instance.new("TextBox")
 SpinInput.Name = "SpinInput"
-SpinInput.Size = UDim2.new(0, 200, 0, 30)
-SpinInput.Position = UDim2.new(0.5, -100, 0.5, -15)
-SpinInput.AnchorPoint = Vector2.new(0.5, 0.5)
-SpinInput.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-SpinInput.BorderSizePixel = 0
+SpinInput.Size = UDim2.new(1, -20, 0, 40)
+SpinInput.Position = UDim2.new(0, 10, 0, 0)
+SpinInput.BackgroundColor3 = Color3.fromRGB(30, 30, 50)
+SpinInput.BorderColor3 = Color3.fromRGB(0, 100, 255)
+SpinInput.BorderSizePixel = 1
 SpinInput.Text = "Sunflower"
 SpinInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpinInput.Font = Enum.Font.Gotham
 SpinInput.TextSize = 14
-SpinInput.Parent = SpinContent
+SpinInput.Parent = SpinFrame
 
 local SpinButton = Instance.new("TextButton")
 SpinButton.Name = "SpinButton"
-SpinButton.Size = UDim2.new(0, 100, 0, 30)
-SpinButton.Position = UDim2.new(0.5, -50, 0.5, 30)
-SpinButton.AnchorPoint = Vector2.new(0.5, 0.5)
-SpinButton.BackgroundColor3 = Color3.fromRGB(80, 120, 80)
+SpinButton.Size = UDim2.new(1, -20, 0, 40)
+SpinButton.Position = UDim2.new(0, 10, 0, 50)
+SpinButton.BackgroundColor3 = Color3.fromRGB(0, 100, 255)
 SpinButton.BorderSizePixel = 0
 SpinButton.Text = "SPIN"
 SpinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpinButton.Font = Enum.Font.GothamBold
-SpinButton.TextSize = 14
-SpinButton.Parent = SpinContent
+SpinButton.TextSize = 16
+SpinButton.Parent = SpinFrame
+
+local SpinButtonGradient = Instance.new("UIGradient")
+SpinButtonGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 80, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 180, 255))
+}
+SpinButtonGradient.Rotation = 90
+SpinButtonGradient.Parent = SpinButton
 
 SpinButton.MouseButton1Click:Connect(function()
     Spawner.Spin(SpinInput.Text)
 end)
 
--- Tab switching function
+-- Tab switching function with animations
 local function switchTab(tab)
     PetsContent.Visible = false
     SeedsContent.Visible = false
     EggsContent.Visible = false
     SpinContent.Visible = false
     
-    PetsTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    SeedsTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    EggsTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    SpinTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    local tabs = {PetsTab, SeedsTab, EggsTab, SpinTab}
+    for _, t in ipairs(tabs) do
+        game:GetService("TweenService"):Create(
+            t,
+            TweenInfo.new(0.2),
+            {BackgroundColor3 = Color3.fromRGB(25, 25, 40)}
+        ):Play()
+    end
     
     if tab == "pets" then
         PetsContent.Visible = true
-        PetsTab.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        game:GetService("TweenService"):Create(
+            PetsTab,
+            TweenInfo.new(0.2),
+            {BackgroundColor3 = Color3.fromRGB(0, 100, 255)}
+        ):Play()
     elseif tab == "seeds" then
         SeedsContent.Visible = true
-        SeedsTab.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        game:GetService("TweenService"):Create(
+            SeedsTab,
+            TweenInfo.new(0.2),
+            {BackgroundColor3 = Color3.fromRGB(0, 100, 255)}
+        ):Play()
     elseif tab == "eggs" then
         EggsContent.Visible = true
-        EggsTab.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        game:GetService("TweenService"):Create(
+            EggsTab,
+            TweenInfo.new(0.2),
+            {BackgroundColor3 = Color3.fromRGB(0, 100, 255)}
+        ):Play()
     elseif tab == "spin" then
         SpinContent.Visible = true
-        SpinTab.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        game:GetService("TweenService"):Create(
+            SpinTab,
+            TweenInfo.new(0.2),
+            {BackgroundColor3 = Color3.fromRGB(0, 100, 255)}
+        ):Play()
     end
 end
 
@@ -277,19 +369,44 @@ SpinTab.MouseButton1Click:Connect(function()
     switchTab("spin")
 end)
 
--- Populate the lists
+-- Enhanced item button creation
 local function createItemButton(parent, name, callback)
     local button = Instance.new("TextButton")
     button.Name = name
-    button.Size = UDim2.new(1, -10, 0, 30)
+    button.Size = UDim2.new(1, -10, 0, 35)
     button.Position = UDim2.new(0, 5, 0, 0)
-    button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    button.BorderSizePixel = 0
+    button.BackgroundColor3 = Color3.fromRGB(30, 30, 50)
+    button.BorderColor3 = Color3.fromRGB(0, 100, 255)
+    button.BorderSizePixel = 1
     button.Text = name
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextColor3 = Color3.fromRGB(200, 200, 255)
     button.Font = Enum.Font.Gotham
     button.TextSize = 14
     button.Parent = parent
+    
+    local buttonGradient = Instance.new("UIGradient")
+    buttonGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 60)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 50))
+    }
+    buttonGradient.Rotation = 90
+    buttonGradient.Parent = button
+    
+    button.MouseEnter:Connect(function()
+        game:GetService("TweenService"):Create(
+            button,
+            TweenInfo.new(0.1),
+            {BackgroundColor3 = Color3.fromRGB(50, 50, 70)}
+        ):Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        game:GetService("TweenService"):Create(
+            button,
+            TweenInfo.new(0.1),
+            {BackgroundColor3 = Color3.fromRGB(30, 30, 50)}
+        ):Play()
+    end)
     
     button.MouseButton1Click:Connect(function()
         callback(name)
@@ -324,18 +441,30 @@ for _, egg in pairs(eggs) do
     end)
 end
 
--- Set initial tab
-switchTab("pets")
-
 -- Auto-resize scrolling frames
 PetsContent.ChildAdded:Connect(function()
-    PetsContent.CanvasSize = UDim2.new(0, 0, 0, PetsList.AbsoluteContentSize.Y + 70)
+    PetsContent.CanvasSize = UDim2.new(0, 0, 0, PetsList.AbsoluteContentSize.Y + 80)
 end)
 
 SeedsContent.ChildAdded:Connect(function()
-    SeedsContent.CanvasSize = UDim2.new(0, 0, 0, SeedsList.AbsoluteContentSize.Y)
+    SeedsContent.CanvasSize = UDim2.new(0, 0, 0, SeedsList.AbsoluteContentSize.Y + 5)
 end)
 
 EggsContent.ChildAdded:Connect(function()
-    EggsContent.CanvasSize = UDim2.new(0, 0, 0, EggsList.AbsoluteContentSize.Y)
+    EggsContent.CanvasSize = UDim2.new(0, 0, 0, EggsList.AbsoluteContentSize.Y + 5)
 end)
+
+-- Set initial tab
+switchTab("pets")
+
+-- Add watermark
+local Watermark = Instance.new("TextLabel")
+Watermark.Name = "Watermark"
+Watermark.Size = UDim2.new(1, 0, 0, 20)
+Watermark.Position = UDim2.new(0, 0, 1, -20)
+Watermark.BackgroundTransparency = 1
+Watermark.Text = "Woeq Hub v1.0"
+Watermark.TextColor3 = Color3.fromRGB(150, 150, 255)
+Watermark.Font = Enum.Font.Gotham
+Watermark.TextSize = 12
+Watermark.Parent = MainFrame
