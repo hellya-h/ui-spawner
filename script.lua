@@ -1,137 +1,59 @@
--- Create the basic ScreenGui and UI components
-local player = game.Players.LocalPlayer
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = player.PlayerGui
-screenGui.Name = "PetSpawnerExecutor"
+local Spawner = loadstring(game:HttpGet("https://gitlab.com/darkiedarkie/dark/-/raw/main/Spawner.lua"))()
 
-local frame = Instance.new("Frame")
-frame.Parent = screenGui
-frame.Size = UDim2.new(0, 400, 0, 400)
-frame.Position = UDim2.new(0.5, -200, 0.5, -200)
-frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-frame.BorderSizePixel = 0
+-- Remove default UI
+-- Spawner.Load() -- not calling this
 
--- Title label
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Parent = frame
-titleLabel.Size = UDim2.new(1, 0, 0, 40)
-titleLabel.Position = UDim2.new(0, 0, 0, 0)
-titleLabel.Text = "Pet Spawner"
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.TextSize = 24
-titleLabel.BackgroundTransparency = 1
-titleLabel.TextAlign = Enum.TextXAlignment.Center
-titleLabel.Font = Enum.Font.SourceSansBold
+-- Create ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game:GetService("CoreGui")
 
--- Pet Name Input
-local petInput = Instance.new("TextBox")
-petInput.Parent = frame
-petInput.Size = UDim2.new(0.8, 0, 0, 40)
-petInput.Position = UDim2.new(0.1, 0, 0.1, 0)
-petInput.PlaceholderText = "Pet Name"
-petInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-petInput.TextSize = 16
-petInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+-- Draggable Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 300, 0, 200)
+MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
 
--- Seed Name Input
-local seedInput = Instance.new("TextBox")
-seedInput.Parent = frame
-seedInput.Size = UDim2.new(0.8, 0, 0, 40)
-seedInput.Position = UDim2.new(0.1, 0, 0.2, 0)
-seedInput.PlaceholderText = "Seed Name"
-seedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-seedInput.TextSize = 16
-seedInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundColor3 = Color3.fromRGB(0, 85, 170)
+Title.Text = "Custom Spawner UI"
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 20
+Title.Parent = MainFrame
 
--- Egg Name Input
-local eggInput = Instance.new("TextBox")
-eggInput.Parent = frame
-eggInput.Size = UDim2.new(0.8, 0, 0, 40)
-eggInput.Position = UDim2.new(0.1, 0, 0.3, 0)
-eggInput.PlaceholderText = "Egg Name"
-eggInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-eggInput.TextSize = 16
-eggInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+-- Utility function for buttons
+local function createButton(name, yPos, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -20, 0, 30)
+    btn.Position = UDim2.new(0, 10, 0, yPos)
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.SourceSans
+    btn.TextSize = 18
+    btn.Text = name
+    btn.MouseButton1Click:Connect(callback)
+    btn.Parent = MainFrame
+end
 
--- Spawn Buttons (Pet, Seed, Egg)
-local spawnPetButton = Instance.new("TextButton")
-spawnPetButton.Parent = frame
-spawnPetButton.Size = UDim2.new(0.8, 0, 0, 40)
-spawnPetButton.Position = UDim2.new(0.1, 0, 0.4, 0)
-spawnPetButton.Text = "Spawn Pet"
-spawnPetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-spawnPetButton.TextSize = 16
-spawnPetButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-
-local spawnSeedButton = Instance.new("TextButton")
-spawnSeedButton.Parent = frame
-spawnSeedButton.Size = UDim2.new(0.8, 0, 0, 40)
-spawnSeedButton.Position = UDim2.new(0.1, 0, 0.5, 0)
-spawnSeedButton.Text = "Spawn Seed"
-spawnSeedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-spawnSeedButton.TextSize = 16
-spawnSeedButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-
-local spawnEggButton = Instance.new("TextButton")
-spawnEggButton.Parent = frame
-spawnEggButton.Size = UDim2.new(0.8, 0, 0, 40)
-spawnEggButton.Position = UDim2.new(0.1, 0, 0.6, 0)
-spawnEggButton.Text = "Spawn Egg"
-spawnEggButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-spawnEggButton.TextSize = 16
-spawnEggButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-
--- Button to load the default UI
-local loadDefaultUIButton = Instance.new("TextButton")
-loadDefaultUIButton.Parent = frame
-loadDefaultUIButton.Size = UDim2.new(0.8, 0, 0, 40)
-loadDefaultUIButton.Position = UDim2.new(0.1, 0, 0.7, 0)
-loadDefaultUIButton.Text = "Load Default UI"
-loadDefaultUIButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-loadDefaultUIButton.TextSize = 16
-loadDefaultUIButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-
--- Button to close the UI
-local closeButton = Instance.new("TextButton")
-closeButton.Parent = frame
-closeButton.Size = UDim2.new(0.1, 0, 0, 30)
-closeButton.Position = UDim2.new(1, -40, 0, 10)
-closeButton.Text = "X"
-closeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
-closeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-
--- Handling the buttons
-spawnPetButton.MouseButton1Click:Connect(function()
-    local petName = petInput.Text
-    if petName and petName ~= "" then
-        Spawner.SpawnPet(petName, 1, 2)  -- Customize weights and age as needed
-    else
-        warn("Please enter a valid Pet name.")
-    end
+-- Buttons using Spawner functions
+createButton("Spawn Raccoon", 50, function()
+    Spawner.SpawnPet("Raccoon", 1, 2)
 end)
 
-spawnSeedButton.MouseButton1Click:Connect(function()
-    local seedName = seedInput.Text
-    if seedName and seedName ~= "" then
-        Spawner.SpawnSeed(seedName)
-    else
-        warn("Please enter a valid Seed name.")
-    end
+createButton("Spawn Candy Blossom", 90, function()
+    Spawner.SpawnSeed("Candy Blossom")
 end)
 
-spawnEggButton.MouseButton1Click:Connect(function()
-    local eggName = eggInput.Text
-    if eggName and eggName ~= "" then
-        Spawner.SpawnEgg(eggName)
-    else
-        warn("Please enter a valid Egg name.")
-    end
+createButton("Spawn Night Egg", 130, function()
+    Spawner.SpawnEgg("Night Egg")
 end)
 
-loadDefaultUIButton.MouseButton1Click:Connect(function()
-    Spawner.Load()  -- Load default UI
-end)
-
-closeButton.MouseButton1Click:Connect(function()
-    screenGui:Destroy()  -- Close the UI
+createButton("Spin Sunflower", 170, function()
+    Spawner.Spin("Sunflower")
 end)
